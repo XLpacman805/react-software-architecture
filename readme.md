@@ -39,6 +39,7 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 
 const app = express();
+app.use(express.static('./build', { index: false }));
 
 app.get('/*', (req, res) => {
   const reactApp = renderToString(
@@ -58,5 +59,71 @@ app.get('/*', (req, res) => {
 
 app.listen(8080, () => {
   console.log('server listening on port 8080');
+});
+```
+
+### Building and Rendering an SSR React App ###
+
+- Need to build project before it can be rendered. `npm run build`
+
+- Will also need to tell express to use that build folder `app.use(express.static('./build', { index: false }));`
+
+### Routing with Server Side Rendering ###
+
+- Need StaticRouter, its the equivalent of BrowserRouter but for the backend. `import {StaticRouter} from 'react-router-dom'`
+```js
+  const reactApp = renderToString(
+    <StaticRouter location={req.url}>
+      <App />
+    </StaticRouter>
+  );
+  ```
+
+  - Move the Browser router out of the app component into the index.js
+```js
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { BrowserRouter } from 'react-router-dom';
+import './index.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+
+ReactDOM.hydrate(
+  <React.StrictMode>
+    <BrowserRouter>
+      <App />
+      </BrowserRouter>
+  </React.StrictMode>,
+  document.getElementById('root')
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+```
+
+- The responsibilies of the index.js change. It's hydrate instead of render. It'll add React to the plain HTML given from the server.
+
+- Need to replace the root in the index.html file with the rendered react app string.
+
+```js
+app.get('/*', (req, res) => {
+  const reactApp = renderToString(
+    <StaticRouter location={req.url}>
+      <App />
+    </StaticRouter>
+  );
+
+    const templateFile = path.resolve('./build/index.html');
+    fs.readFile(templateFile, 'utf8', (err, data) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+
+      return res.send(
+        data.replace('<div id="root"></div>', `<div id="root">${reactApp}</div>`)
+      );
+    });
 });
 ```
