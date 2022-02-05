@@ -127,3 +127,44 @@ app.get('/*', (req, res) => {
     });
 });
 ```
+
+### Styling with SSR ###
+
+- Need CSS modules to work on SSR, need to edit the webpack if you wanna go that route.
+
+- You can also just put all the css in the index.css
+
+- Styled components is an easy way to get encapsulated styling that can be SSR'd
+
+  - Needs extra work to get it to SSR. The styles need to be scraped from the generated app and put into our index html.
+
+  ```html
+    <!-- ... put this unique string into the index html to replace it with styles on the server side. -->
+    {{styles}}
+    <title>React App</title>
+  </head>
+  ```
+
+  ```js
+  import { ServerStyleSheet } from 'styled-components';
+  // ...
+  const sheet = new ServerStyleSheet();
+
+  const reactApp = renderToString(
+    sheet.collectStyles(
+      <StaticRouter location={req.url}>
+        <App />
+      </StaticRouter>
+    )
+  );
+
+  //...
+  return res.send(
+        data.replace('<div id="root"></div>', `<div id="root">${reactApp}</div>`)
+          .replace('{{styles}}', sheet.getStyleTags())
+      );
+  ```
+
+  ### SSR Caveats ###
+
+  - Your app executes in the server, not the browser (obviously), but that also means you cant use browser api's. No window or document objects.
