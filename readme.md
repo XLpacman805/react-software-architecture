@@ -138,33 +138,71 @@ app.get('/*', (req, res) => {
 
   - Needs extra work to get it to SSR. The styles need to be scraped from the generated app and put into our index html.
 
-  ```html
-    <!-- ... put this unique string into the index html to replace it with styles on the server side. -->
-    {{styles}}
-    <title>React App</title>
-  </head>
-  ```
+```html
+  <!-- ... put this unique string into the index html to replace it with styles on the server side. -->
+  {{styles}}
+  <title>React App</title>
+</head>
+```
 
-  ```js
-  import { ServerStyleSheet } from 'styled-components';
-  // ...
-  const sheet = new ServerStyleSheet();
+```js
+import { ServerStyleSheet } from 'styled-components';
+// ...
+const sheet = new ServerStyleSheet();
 
-  const reactApp = renderToString(
-    sheet.collectStyles(
-      <StaticRouter location={req.url}>
-        <App />
-      </StaticRouter>
-    )
-  );
+const reactApp = renderToString(
+  sheet.collectStyles(
+    <StaticRouter location={req.url}>
+      <App />
+    </StaticRouter>
+  )
+);
 
-  //...
-  return res.send(
-        data.replace('<div id="root"></div>', `<div id="root">${reactApp}</div>`)
-          .replace('{{styles}}', sheet.getStyleTags())
-      );
-  ```
+//...
+return res.send(
+      data.replace('<div id="root"></div>', `<div id="root">${reactApp}</div>`)
+        .replace('{{styles}}', sheet.getStyleTags())
+    );
+```
 
-  ### SSR Caveats ###
+### SSR Caveats ###
 
-  - Your app executes in the server, not the browser (obviously), but that also means you cant use browser api's. No window or document objects.
+- Your app executes in the server, not the browser (obviously), but that also means you cant use browser api's. No window or document objects.
+
+## State Management Architecture ##
+
+How an application handles the data needs of its components, with regards to loading, storing, persisting, and sharing this data.
+
+#### State Management Tech: ####
+
+1. useState Hook
+2. Context
+3. Recoil
+4. Redux
+5. MobX
+
+#### State management tools and techniques depend on: ####
+
+- Size and complexity of application
+
+- How many components need to share that data
+
+- Unique strengths and weaknesses of each
+
+#### Different Sizes of State ####
+
+- Small state (isolated/atomic pieces of data)
+
+  - useState
+
+  - Context
+
+- Medium state (smalled subset of components that share data)
+
+  - Recoil
+
+- Big state (state required by a large number of components)
+
+  - Redux
+
+  - MobX
