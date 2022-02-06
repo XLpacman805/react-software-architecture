@@ -323,3 +323,154 @@ export const CounterButton = () => {
 - Recoil shares state between components. If two components useRecoilState on the same key, its going to render the same value. Beware of this. 
 
 - `useRecoilValue(key)` hook pretty much just gets the value. Readonly.
+
+### Big state with Redux ###
+
+`npm install redux react-redux`
+
+Redux state management has several key parts
+
+- Actions (anything that could change the state of our app)
+
+  - actions.js
+
+- Reducers (tell redux how the state of an application should change for a given action)
+
+  - reducers.js
+
+- Selectors (get and transform data)
+
+  - selectors.js
+#### Actions ####
+
+Actions in Redux are basically json objects that contain the `type` of action and `payload`.
+```js
+export const counterButtonClicker = {
+  type: 'COUNTER_BUTTON_CLICKED',
+  payload: { amount: 1 }, // how much to increment counter by.
+}
+```
+
+#### Reducers ####
+
+Tells redux how the state of an application should change, given a type of action. Reducers are usually functions. It basically needs to return the new state.
+
+```js
+//reducers.js
+export const numberofClicksReducer = (state = 0, action) => {
+  const { type } = action;
+
+  switch(type) {
+    case 'COUNTER_BUTTON_CLICKED':
+      return state + action.payload.amount;
+    default:
+      return state;
+  }
+}
+```
+#### Selectors ####
+
+Tells our components where in the state to find the given value they're looking for.
+
+```js
+//selector.js
+export const getNumberOfClicks = state => state.numberOfClicks;
+```
+
+### Using Redux with Components ###
+
+- Need to make a Redux Store.
+
+- The root reducer defines how each of our individual reducers fits into the state of our app.
+
+```js
+//store.js
+import { createStore, combineReducers } from 'redux';
+import { numberofClicksReducer } from './reducers';
+
+const rootReducer = combineReducers({
+  numberofClicks: numberofClicksReducer,
+});
+
+export const store = createStore(rootReducer);
+```
+
+```js
+//app.js
+import React from 'react';
+import { Provider } from 'react-redux';
+import { store } from './store';
+import { CounterButton } from './CounterButton';
+
+const App = () => {
+	return (
+			<Provider store={store}>
+				<h1> State Management Example </h1>
+				<CounterButton />
+			</Provider>
+
+	);
+}
+
+export default App;
+
+```
+
+#### Accessing Redux Store & Dispatching Actions ####
+
+- useSelector & useDispatch
+
+```js
+// CounterButton.js
+// Currently increments by 1, because its hardcoded in the action.
+import { useState } from "react"
+import { useSelector, useDispatch } from "react-redux";
+import { getNumberOfClicks } from "./selectors";
+import { counterButtonClicked } from './actions';
+
+export const CounterButton = () => {
+  const numberOfClicks = useSelector(getNumberOfClicks);
+  const dispatch = useDispatch();
+  const [incrementBy, setIncrementBy] = useState(1);
+
+  return (
+    <>
+      <p> You have clicked the button {numberOfClicks} times</p>
+      <label>
+        Increment By: 
+        <input
+          value={incrementBy}
+          onChange={e => setIncrementBy(Number(e.target.value))}
+          type="number"
+        />
+      </label>
+      <button
+        onClick={() => dispatch(counterButtonClicked)}
+      >
+        Click
+      </button>
+    </>
+  )
+}
+```
+
+- Make an action a function to pass in a custom payload.
+
+```js
+//actions.js
+export const counterButtonClicked = amount => ({
+  type: 'COUNTER_BUTTON_CLICKED',
+  payload: { amount }, // how much to increment counter by.
+})
+```
+
+```js
+//CounterButton.js
+// ...
+      <button
+        onClick={() => dispatch(counterButtonClicked(incrementBy))}
+      >
+// ...
+```
+
+- Only put things in the store that NEED to be shared.
