@@ -540,3 +540,43 @@ app.use(express.static('./build', { index: false }))
 - isomorphic rendering is the topic at hand. Learn more about this. 
 
 ## Code Splitting ##
+
+It's code splitting! Basically load code when you need it. Kinda like lazy loading images. There's plenty of ways to do this and pretty important for front end performance and architecture.
+
+## Folder Structure and Naming Conventions ##
+
+- Function Based Organization
+
+  - Highest level folders in `/src` diectory based on the function they provide.
+
+  - `/utils`, `/hooks`, `/reducers` etc...
+
+  - Normal but not very scalable.
+
+- Feature Based Organization
+
+  - Based on what users would describe as features. 
+
+  - `/articles`, `/signups`, `/subscriptions`
+
+  - Works better in larger code bases because developers usually work on features instead of functions. 
+
+## Monoliths, Multirepos, and Monorepos ##
+
+- A monolith is when all the source code is in one directory.
+
+  - Simple at first. Usually how projects start. Good for prototype.
+
+  - They become unmanageable at scale.
+
+- A multirepo is when the projects source code is kept seperate. Can be worked on and deployed independently. AKA microservices. 
+
+  - Has some overhead when getting started.
+
+  - Generally work better when teams are isolated. Release independent of other teams.
+
+- A monorepo is when all the code is in the same code base but organized so that each piece is independent of other pieces.
+
+  - Used by many large tech companies. 
+
+  - Include benefits of both of monolith and multirepo except code is kept in the same repo.
