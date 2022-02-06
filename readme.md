@@ -474,3 +474,69 @@ export const counterButtonClicked = amount => ({
 ```
 
 - Only put things in the store that NEED to be shared.
+
+## Data Loading and WebSockets ##
+
+- SSR will render the frontend except the fetch calls by default. 
+
+- To make server load data instead of fetching, you can put the data itself into the HTML document.
+
+```js
+		const loadedArticles = articles;
+
+		return res.send(
+			data.replace('<div id="root"></div>', `<script>window.preloadedArticles = ${JSON.stringify(loadedArticles)};</script><div id="root">${reactApp}</div>`)
+				.replace('{{ styles }}', sheet.getStyleTags())
+		)
+```
+- Stringifying the loaded articles and wrapping it in a script tag will make it so that the script executes client side. The script just assignes the json to the window object when it executes. The json was fully loaded and stringified on the server side. 
+
+  - Will need to update components to get data from window instead of a fetch call, if it exists on the window.
+
+  ```js
+  // articles.js
+  // ...
+  const [articles, setArticles] = useState(window && window.preloadedArticles);
+
+  	useEffect(() => {
+		if (window && !window.preloadedArticles) {
+			console.log('No preloaded articles found, loading from server');
+			fetch('/api/articles')
+				.then(response => response.json())
+				.then(data => setArticles(data));
+		}
+	}, []);
+  //...
+  ```
+
+- Don't forget to set a global window object in the server.js to prevent the app from crashing. window doesn't exist in nodejs, its just a DOM API in the browser. 
+
+```js
+// server.js
+//...
+global.window = {};
+
+const app = express();
+
+app.use(express.static('./build', { index: false }))
+```
+
+- Though this is good, its still isn't fully server side rendered. The browser rehydrates the UI with this data client side.
+
+### Rendering Server-Side API Data ###
+
+- useEffect isn't called when being rendered on the server. 
+
+- Context can be used to solve this problem.
+
+  - Basic strategy is to render twice on the server side.
+
+    1. Find all instances that make a request for data
+
+    2. Get that data and pass it into a context provider.
+
+- isomorphic fetch allows fetch to be called directly from server side code.
+
+- isomorphic rendering is the topic at hand. Learn more about this. 
+
+## Code Splitting ##
