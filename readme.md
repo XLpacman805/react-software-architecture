@@ -206,3 +206,108 @@ How an application handles the data needs of its components, with regards to loa
   - Redux
 
   - MobX
+
+### Small state with the useState Hook ###
+
+Your normal useState hook `const [numberOfClicks, setNumberOfClicks] = useState(0);`.
+
+### Small state with Context ###
+
+Context lets components share state without having to pass data around as props. You can avoid prop drilling.
+
+- Need to make a file for each of your contexts. You can import it into whatever component.
+
+```js
+// CounterContext.js
+import { createContext } from 'react';
+export const CounterContext = createContext();
+```
+
+- Need to make a provider file
+```js
+// CounterProvider.js
+import { useState } from "react";
+import { CounterContext } from "./CounterContext";
+
+export const CounterProvider = ({children}) => {
+  const [numberOfClicks, setNumberOfClicks] = useState(0);
+
+  const increment = amount => {
+    setNumberOfClicks(numberOfClicks + 1);
+  }
+
+  return (
+    <CounterContext.Provider value={{numberOfClicks, increment}}>
+      {children}
+    </CounterContext.Provider>
+  )
+}
+```
+
+- Wrap the Context around what components need its data.
+```js
+//app.js
+const App = () => {
+	return (
+			<CounterProvider>
+				<h1> State Management Example </h1>
+				<CounterButton />
+			</CounterProvider>
+
+	);
+}
+```
+
+### Accessing context inside components ###
+
+- Allow a child component to access the value of a context.
+
+```js
+//CounterProvider.js
+import { useState } from "react";
+import { CounterContext } from "./CounterContext";
+
+export const CounterProvider = ({children}) => {
+  const [numberOfClicks, setNumberOfClicks] = useState(0);
+
+  const increment = incrementBy => {
+    setNumberOfClicks(numberOfClicks + incrementBy);
+  }
+
+  return (
+    <CounterContext.Provider value={{numberOfClicks, increment}}>
+      {children}
+    </CounterContext.Provider>
+  )
+}
+```
+
+```js
+//CounterButton.js
+import { useContext, useState } from "react"
+import { CounterContext } from "./CounterContext"
+
+export const CounterButton = () => {
+  const { numberOfClicks, increment } = useContext(CounterContext)
+  const [incrementBy, setIncrementBy] = useState(1);
+
+  return (
+    <>
+      <p> You have clicked the button {numberOfClicks} times</p>
+      <label>
+        Increment By: 
+        <input
+          value={incrementBy}
+          onChange={e => setIncrementBy(Number(e.target.value))}
+          type="number"
+        />
+      </label>
+      <button
+        onClick={() => increment(incrementBy)}
+      >
+        Click
+      </button>
+    </>
+  )
+}
+```
