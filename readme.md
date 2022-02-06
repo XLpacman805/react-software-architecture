@@ -311,3 +311,15 @@ export const CounterButton = () => {
   )
 }
 ```
+
+### Medium State with Recoil ###
+
+- You wrap your whole app in `RecoilRoot`, it keeps track of all our states. 
+
+- Recoil uses two concepts. "Atoms and Selectors". Atoms hold your data.
+
+- Recoil has a `useRecoilState` hook that is very similar to `useState`. 
+
+- Recoil shares state between components. If two components useRecoilState on the same key, its going to render the same value. Beware of this. 
+
+- `useRecoilValue(key)` hook pretty much just gets the value. Readonly.
